@@ -3,10 +3,12 @@ python =0
 try:
     from urllib.request import Request
     from urllib.request import urlopen
+    from urllib.error import HTTPError
     python = 3
 except ImportError:
     from urllib2 import Request
     from urllib2 import urlopen
+    from urllib2 import HTTPError
     python =2
 
 import base64
@@ -28,8 +30,13 @@ def getJenkinsAPIData(url,username,password):
     request.add_header("Authorization", "Basic %s" % base64string)
 
     #execure the actual request
-    response = urlopen(request)
-    return response
+    try:
+        response = urlopen(request)
+        return response
+    except HTTPError as e:
+        print(e.reason)
+        return None
+
 
 class connectionInfo:
     
@@ -74,6 +81,9 @@ class connectionInfo:
 
 con = connectionInfo()
 response = getJenkinsAPIData("http://localhost:8080/api/python?depth=0",con.username,con.password)
+
+if response is None:
+    exit(1)
 
 resp = eval(response.read())
 
