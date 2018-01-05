@@ -1,7 +1,7 @@
 
 import base64
-import sys
 import ast
+import getpass
 
 PYTHON =0
 try:
@@ -63,10 +63,16 @@ class connectionInfo:
 
     def queryPassword(self):
         pasw = None
+        
         if PYTHON == 3:
             pasw = input("Password:")
         elif PYTHON == 2:
             pasw = raw_input("Password:")
+        
+        #the following line works fine on CLI however seems to have IDE compatibility issues
+        #the line is also a substitute for the if block above it and serves as a safer way to 
+        #input passwords into the script
+        #pasw = getpass.getpass("Password:")
         if not pasw is None:
             self.password = pasw
 
@@ -87,7 +93,8 @@ RESPONSE = getJenkinsAPIData("http://localhost:8080/api/python?depth=0",CON.user
 if RESPONSE is None:
     exit(1)
 
-RESP = ast.literal_eval(RESPONSE.read())
+RESP = eval(RESPONSE.read())#ast.literal_eval(RESPONSE.read()) seems to not work with pycharm as well however it should be used over eval
 
 DATA = RESP["jobs"][0]
-print(RESP["jobs"][0]["url"])
+for i in RESP["jobs"]:
+    print(i)
