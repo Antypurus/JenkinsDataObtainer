@@ -1,38 +1,40 @@
 
-python =0
+import base64
+import sys
+import ast
+
+PYTHON =0
 try:
     from urllib.request import Request
     from urllib.request import urlopen
     from urllib.error import HTTPError
-    python = 3
+    PYTHON = 3
 except ImportError:
     from urllib2 import Request
     from urllib2 import urlopen
     from urllib2 import HTTPError
-    python =2
+    PYTHON =2
 
-import base64
-import sys
 
 def getJenkinsAPIData(url,username,password):
     JENKINS_LOGIN = username
     JENKINS_PASSWD = password
 
-    data = None
+    DATA = None
 
-    request = Request(url, data)#create request header
+    request = Request(url, DATA)#create request header
 
     #create the secure authentication section of the request header
-    if python == 3:
+    if PYTHON == 3:
         base64string = base64.encodebytes(('%s:%s' % (JENKINS_LOGIN, JENKINS_PASSWD)).encode()).decode().replace('\n', '')
-    elif python == 2:
+    elif PYTHON == 2:
         base64string = base64.encodestring('%s:%s' % (JENKINS_LOGIN, JENKINS_PASSWD)).replace('\n', '')
     request.add_header("Authorization", "Basic %s" % base64string)
 
     #execure the actual request
     try:
-        response = urlopen(request)
-        return response
+        ANS = urlopen(request)
+        return ANS
     except HTTPError as e:
         print(e.reason)
         return None
@@ -52,40 +54,40 @@ class connectionInfo:
 
     def queryUsename(self):
         name = None
-        if python == 3:
+        if PYTHON == 3:
             name = input("Username:")
-        elif python == 2:
+        elif PYTHON == 2:
             name = raw_input("Username:")
         if not name is None:
             self.username = name
 
     def queryPassword(self):
         pasw = None
-        if python == 3:
+        if PYTHON == 3:
             pasw = input("Password:")
-        elif python == 2:
+        elif PYTHON == 2:
             pasw = raw_input("Password:")
         if not pasw is None:
             self.password = pasw
 
     def queryURL(self):
         addr = None
-        if python == 3:
+        if PYTHON == 3:
             addr = input("Server Address:")
-        elif python == 2:
+        elif PYTHON == 2:
             addr = raw_input("Server Address:")
 
         if addr is not None:
             self.url = addr 
 
 
-con = connectionInfo()
-response = getJenkinsAPIData("http://localhost:8080/api/python?depth=0",con.username,con.password)
+CON = connectionInfo()
+RESPONSE = getJenkinsAPIData("http://localhost:8080/api/python?depth=0",CON.username,CON.password)
 
-if response is None:
+if RESPONSE is None:
     exit(1)
 
-resp = eval(response.read())
+RESP = ast.literal_eval(RESPONSE.read())
 
-data = resp["jobs"][0]
-print(resp["jobs"][0]["url"])
+DATA = RESP["jobs"][0]
+print(RESP["jobs"][0]["url"])
