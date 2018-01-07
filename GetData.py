@@ -2,6 +2,7 @@
 import base64
 import ast
 import getpass
+import time
 
 PYTHON =0
 try:
@@ -118,4 +119,9 @@ for i in RESP["jobs"]:
         exit(1)
 
     lastBuild = eval(RESPONSE.read())
-    print("\t{}".format(lastBuild["result"]))
+
+    now = time.ctime(int(time.time()))
+
+    print("\tJob Display Name:{}".format(JOB["displayName"]))
+    print("\tLast Build Time Checked At:{}".format(now))
+    print("\tLast Build Status:{}".format(lastBuild["result"]))
