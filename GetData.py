@@ -8,11 +8,13 @@ try:
     from urllib.request import Request
     from urllib.request import urlopen
     from urllib.error import HTTPError
+    from urllib.error import URLError 
     PYTHON = 3
 except ImportError:
     from urllib2 import Request
     from urllib2 import urlopen
     from urllib2 import HTTPError
+    from urllib2 import URLError
     PYTHON =2
 
 
@@ -36,6 +38,9 @@ def getJenkinsAPIData(url,username,password):
         ANS = urlopen(request)
         return ANS
     except HTTPError as e:
+        print(e.reason)
+        return None
+    except URLError as e:
         print(e.reason)
         return None
 
@@ -91,6 +96,7 @@ CON = connectionInfo()
 RESPONSE = getJenkinsAPIData("http://localhost:8080/api/python?depth=0",CON.username,CON.password)
 
 if RESPONSE is None:
+    print("Connection Issue Exiting")
     exit(1)
 
 RESP = eval(RESPONSE.read())#ast.literal_eval(RESPONSE.read()) seems to not work with pycharm as well however it should be used over eval
