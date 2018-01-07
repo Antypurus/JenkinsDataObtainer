@@ -46,7 +46,8 @@ def getJenkinsAPIData(url,username,password):
 
 
 class connectionInfo:
-    
+
+    api_append = "/api/python?depth=0"
     url = None
     username = None
     password = None
