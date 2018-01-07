@@ -104,4 +104,18 @@ RESP = eval(RESPONSE.read())#ast.literal_eval(RESPONSE.read()) seems to not work
 
 DATA = RESP["jobs"][0]
 for i in RESP["jobs"]:
-    print(i)
+    print(i["url"])
+    RESPONSE = getJenkinsAPIData(i["url"]+CON.api_append,CON.username,CON.password)
+    if RESPONSE is None:
+        print("Connection Issue Exiting")
+        exit(1)
+    
+    JOB = eval(RESPONSE.read())
+
+    RESPONSE = getJenkinsAPIData(JOB["lastBuild"]["url"]+CON.api_append,CON.username,CON.password)
+    if RESPONSE is None:
+        print("Connection Issue Exiting")
+        exit(1)
+
+    lastBuild = eval(RESPONSE.read())
+    print("\t{}".format(lastBuild["result"]))
