@@ -19,9 +19,6 @@ except ImportError:
     from urllib2 import URLError
     PYTHON =2
 
-dbCON = None
-dbCUR = None
-
 def getJenkinsAPIData(url,username,password):
     JENKINS_LOGIN = username
     JENKINS_PASSWD = password
@@ -54,20 +51,20 @@ def openDB(dbName):
 
     dbCUR.execute("""CREATE TABLE IF NOT EXISTS JOB(URL TEXT,NAME TEXT,STATUS TEXT,LAST_CHECKED TEXT)""")
     dbCON.commit()
+    return (dbCON,dbCUR)
+
+def insertJobIntoDB(con,cur,jURL,Name,Status,Date):
+    cur.execute("""INSERT INTO JOB(URL,NAME,STATUS,LAST_CHECKED) VALUES (?,?,?,?)""",(jURL,Name,Status,Date))
+    con.commit()
     return
 
-def insertJobIntoDB(jURL,Name,Status,Date):
-    dbCUR.execute("""INSERT INTO JOB(URL,NAME,STATUS,LAST_CHECLED) VALUES (?,?,?,?)""",jURL,Name,Status,Date)
-    dbCON.commit()
-    return
-
-def closeDB():
-    if dbCUR is not None:
-        dbCUR.close()
-        dbCUR = None
-    if dbCON is not None:
-        dbCON.close()
-        dbCON = None
+def closeDB(con,cur):
+    if cur is not None:
+        cur.close()
+        cur = None
+    if con is not None:
+        con.close()
+        con = None
     return
 
 
@@ -118,7 +115,9 @@ class connectionInfo:
         if addr is not None:
             self.url = addr 
 
-openDB("test.db")
+db = openDB("test.db")
+con = db[0]
+cur = db[1]
 
 CON = connectionInfo()
 RESPONSE = getJenkinsAPIData("http://localhost:8080/api/python?depth=0",CON.username,CON.password)
@@ -148,10 +147,11 @@ for i in RESP["jobs"]:
 
     now = time.ctime(int(time.time()))
 
-    insertJobIntoDB(i["url"],JOB["displayName"],lastBuild["result"],now)
-
     print("\tJob Display Name:{}".format(JOB["displayName"]))
     print("\tLast Build Time Checked At:{}".format(now))
     print("\tLast Build Status:{}".format(lastBuild["result"]))
 
-closeDB()
+    insertJobIntoDB(con,cur,i["url"],JOB["displayName"],lastBuild["result"],now)
+    print("\n\tInformation Added to Database")
+
+closeDB(con,cur)
