@@ -4,6 +4,7 @@ import ast
 import getpass
 import time
 import sqlite3
+import re
 
 PYTHON =0
 try:
@@ -116,14 +117,17 @@ class connectionInfo:
             addr = raw_input("Server Address:")
 
         if addr is not None:
-            self.url = addr 
+            if re.match("^http?://",addr):
+                self.url = addr
+            else:
+                self.url = "http://"+addr
 
 db = openDB("test.db")
 con = db[0]
 cur = db[1]
 
 CON = connectionInfo()
-RESPONSE = getJenkinsAPIData("http://localhost:8080/api/python?depth=0",CON.username,CON.password)
+RESPONSE = getJenkinsAPIData(CON.url+CON.api_append,CON.username,CON.password)
 
 if RESPONSE is None:
     print("Connection Issue Exiting")
