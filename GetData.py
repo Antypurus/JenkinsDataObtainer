@@ -3,6 +3,7 @@ import base64
 import ast
 import getpass
 import time
+import sqlite3
 
 PYTHON =0
 try:
@@ -18,6 +19,8 @@ except ImportError:
     from urllib2 import URLError
     PYTHON =2
 
+dbCON = None
+dbCUR = None
 
 def getJenkinsAPIData(url,username,password):
     JENKINS_LOGIN = username
@@ -44,6 +47,28 @@ def getJenkinsAPIData(url,username,password):
     except URLError as e:
         print(e.reason)
         return None
+
+def openDB(dbName):
+    dbCON = sqlite3.connect(dbName)
+    dbCUR = dbCON.cursor()
+
+    dbCUR.execute("""CREATE TABLE IF NOT EXISTS JOB(URL TEXT,NAME TEXT,STATUS TEXT,LAST_CHECKED TEXT)""")
+    dbCON.commit()
+    return
+
+def insertJobIntoDB(jURL,Name,Status,Date):
+    dbCUR.execute("""INSERT INTO JOB(URL,NAME,STATUS,LAST_CHECLED) VALUES (?,?,?,?)""",jURL,Name,Status,Date)
+    dbCON.commit()
+    return
+
+def closeDB():
+    if dbCUR is not None:
+        dbCUR.close()
+        dbCUR = None
+    if dbCON is not None:
+        dbCON.close()
+        dbCON = None
+    return
 
 
 class connectionInfo:
@@ -93,6 +118,7 @@ class connectionInfo:
         if addr is not None:
             self.url = addr 
 
+openDB("test.db")
 
 CON = connectionInfo()
 RESPONSE = getJenkinsAPIData("http://localhost:8080/api/python?depth=0",CON.username,CON.password)
@@ -122,6 +148,10 @@ for i in RESP["jobs"]:
 
     now = time.ctime(int(time.time()))
 
+    insertJobIntoDB(i["url"],JOB["displayName"],lastBuild["result"],now)
+
     print("\tJob Display Name:{}".format(JOB["displayName"]))
     print("\tLast Build Time Checked At:{}".format(now))
     print("\tLast Build Status:{}".format(lastBuild["result"]))
+
+closeDB()
