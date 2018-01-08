@@ -45,16 +45,19 @@ def getJenkinsAPIData(url,username,password):
         print(e.reason)
         return None
 
-def openDB(dbName):
+def openDB(dbName,keepData=False):
     dbCON = sqlite3.connect(dbName)
     dbCUR = dbCON.cursor()
-
-    dbCUR.execute("""CREATE TABLE IF NOT EXISTS JOB(URL TEXT,NAME TEXT,STATUS TEXT,LAST_CHECKED TEXT)""")
+    if keepData is True:
+        dbCUR.execute("""CREATE TABLE IF NOT EXISTS JOBS(URL TEXT,NAME TEXT,STATUS TEXT,LAST_CHECKED TEXT)""")
+    else:
+        dbCUR.execute("""DROP TABLE IF EXISTS JOBS""")
+        dbCUR.execute("""CREATE TABLE JOBS(URL TEXT,NAME TEXT,STATUS TEXT,LAST_CHECKED TEXT)""")
     dbCON.commit()
     return (dbCON,dbCUR)
 
 def insertJobIntoDB(con,cur,jURL,Name,Status,Date):
-    cur.execute("""INSERT INTO JOB(URL,NAME,STATUS,LAST_CHECKED) VALUES (?,?,?,?)""",(jURL,Name,Status,Date))
+    cur.execute("""INSERT OR REPLACE INTO JOBS(URL,NAME,STATUS,LAST_CHECKED) VALUES (?,?,?,?)""",(jURL,Name,Status,Date))
     con.commit()
     return
 
